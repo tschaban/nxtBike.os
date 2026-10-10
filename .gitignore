@@ -1,0 +1,25 @@
+# ESP-IDF generated output and local configuration
+/build/
+/.pio/
+/sdkconfig
+/sdkconfig.old
+/sdkconfig.*
+!/sdkconfig.defaults
+/managed_components/
+/.version/
+/version.txt
+
+# Editor and OS files
+/.vscode/
+/.idea/
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+
+# Local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key

@@ -1,0 +1,51 @@
+name: Firmware CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firmware-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build nxtBike.os firmware
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PlatformIO
+        # esptool 4.9 imports intelhex, which the pinned platform may omit.
+        run: python -m pip install platformio==6.1.18 intelhex==2.3.0
+
+      - name: Build firmware
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" -lt 100
+          export NXTB_BUILD_NUMBER=$((GITHUB_RUN_NUMBER * 100 + GITHUB_RUN_ATTEMPT))
+          pio run -e nxtBike_os_S3_N16R8
+
+      - name: Test version allocation
+        run: python -m unittest discover -s tests -v
+
+      - name: Save firmware and debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: nxtbike-s3-${{ github.sha }}
+          path: |
+            .pio/build/nxtBike_os_S3_N16R8/*.bin
+            .pio/build/nxtBike_os_S3_N16R8/firmware.elf
+            .pio/build/nxtBike_os_S3_N16R8/firmware-version.json
+          if-no-files-found: error
+          retention-days: 14
