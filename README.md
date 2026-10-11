@@ -45,10 +45,58 @@ and FreeRTOS as its framework. See the
 [PlatformIO ESP-IDF guide](https://docs.platformio.org/en/latest/frameworks/espidf.html)
 and [pinned platform manifest](https://github.com/platformio/platform-espressif32/blob/v6.12.0/platform.json).
 
-`sdkconfig.defaults` supplies shared defaults when configuration is generated.
-Local `sdkconfig` and `sdkconfig.nxtBike_os_S3_N16R8` are ignored by Git. Existing local
-settings can override changed defaults, so review them with
-`pio run -t menuconfig` when updating.
+### Hardware and firmware profiles
+
+`platformio.ini` only selects the default environment and includes configuration
+files from `config/platformio/`:
+
+| File | Responsibility |
+| --- | --- |
+| `common.ini` | Pinned platform, framework, build hooks, monitor speed |
+| `hardware.ini` | Board templates, flash settings, partition layout |
+| `profiles.ini` | Development/debug and production/release templates |
+| `environments.ini` | Buildable combinations of hardware and profile |
+
+The default is `nxtBike_os_S3_N16R8_dev`. The former environment name
+`nxtBike_os_S3_N16R8` has been replaced by these explicit variants:
+
+```sh
+pio run -e nxtBike_os_S3_N16R8_dev
+pio run -e nxtBike_os_S3_N16R8_prod
+pio run -e nxtBike_os_S3_N16R8_dev -t upload
+pio device monitor -e nxtBike_os_S3_N16R8_dev
+```
+
+Development enables INFO logs over UART0 at 115200 baud, bootloader logs,
+and panic diagnostics. Production disables application and second-stage
+bootloader logs, primary/secondary consoles, and panic output (silent reboot).
+The immutable ROM can still print at reset: suppressing those messages requires
+board-specific strapping or eFuse configuration. No eFuses are changed by this
+project. Direct UART driver writes added by future code are independent of the
+console configuration.
+
+ESP-IDF defaults are loaded in order: shared `sdkconfig.defaults`, hardware
+`config/sdkconfig/esp32s3-n16r8.defaults`, then `dev.defaults` or `prod.defaults`.
+Each environment has separate `.pio/build/<environment>/` output and ignored
+`sdkconfig.<environment>` settings, so switching profiles does not reuse the
+other profile's configuration. Existing local sdkconfig values override defaults.
+After changing defaults, back up any local menuconfig customizations, remove
+only the affected `sdkconfig.<environment>` and `.pio/build/<environment>/`, then
+rebuild. `pio run -t clean` alone does not reset sdkconfig. For a production
+release, build with freshly generated configuration rather than local overrides.
+Verify effective settings after building (CI runs these checks too):
+
+```sh
+python scripts/check_profile.py dev .pio/build/nxtBike_os_S3_N16R8_dev
+python scripts/check_profile.py prod .pio/build/nxtBike_os_S3_N16R8_prod
+```
+
+To add hardware, create a template in `hardware.ini` and its ESP-IDF defaults
+under `config/sdkconfig/`. Add combinations in `environments.ini` using `extends`
+and list the shared, hardware, and profile files in `SDKCONFIG_DEFAULTS`.
+To add a profile, add its template to `profiles.ini` and its own defaults file.
+Add any new supported environment to the CI matrix as well. Paths are relative
+to the project root, including paths in included INI files.
 
 ### Build troubleshooting
 
@@ -62,7 +110,7 @@ For the default Windows PlatformIO IDE installation, run in PowerShell:
 
 Then build again. If the error comes from ESP-IDF's separate Python environment,
 install the same package using the Python executable listed as `PYTHON` in
-`.pio/build/nxtBike_os_S3_N16R8/CMakeCache.txt`. GitHub Actions installs this dependency
+`.pio/build/<environment>/CMakeCache.txt`. GitHub Actions installs this dependency
 explicitly. See the [upstream issue](https://github.com/platformio/platform-espressif32/issues/1632).
 
 ## Firmware version
@@ -86,9 +134,9 @@ per checkout because the generated version file is shared.
 
 The hook writes ignored `version.txt`, which ESP-IDF embeds in its standard
 application descriptor inside `firmware.bin`. Firmware reads it with
-`esp_app_get_description()->version` and prints it at startup. No filesystem
+`esp_app_get_description()->version` and prints it at startup in development builds. No filesystem
 partition is needed. A matching `firmware-version.json` is generated beside
-the binary in `.pio/build/nxtBike_os_S3_N16R8/`.
+the binary in `.pio/build/<environment>/`.
 
 GitHub Actions uses `run_number * 100 + run_attempt` as its build number, reserving
 99 attempts per workflow run. Its metadata says `source: ci`; local builds say
@@ -103,9 +151,9 @@ Run versioning tests with `python -m unittest discover -s tests -v`.
 | Path | Purpose |
 | --- | --- |
 | `main/` | Boot application |
-| `platformio.ini` | PlatformIO environment, board overrides, and toolchain selection |
+| `platformio.ini`, `config/platformio/` | Modular PlatformIO environments, hardware, and profiles |
 | `CMakeLists.txt` | ESP-IDF project definition |
-| `sdkconfig.defaults` | Shared flash, PSRAM, and partition settings |
+| `sdkconfig.defaults`, `config/sdkconfig/` | Shared, hardware, and profile ESP-IDF defaults |
 | `partitions.csv` | NVS, PHY, and a 4 MiB factory application |
 | `docs/ARCHITECTURE.md` | Boundaries for future firmware components |
 | `docs/HARDWARE.md` | Board assumptions and pin constraints |
@@ -119,7 +167,8 @@ partition migration before implementation.
 
 [Firmware CI](.github/workflows/firmware.yml) builds the ESP32-S3 firmware on
 GitHub Actions for pushes and pull requests and saves the build artifacts.
-CI also tests the version allocator. Firmware unit tests will be added as
+CI builds both profiles, checks their effective logging/console settings, and
+tests the version allocator. Firmware unit tests will be added as
 application logic is implemented. See [Contributing](CONTRIBUTING.md#github-actions).
 
 ## License

@@ -14,7 +14,15 @@ concurrency:
 
 jobs:
   build:
-    name: Build nxtBike.os firmware
+    name: Build firmware (${{ matrix.environment }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - environment: nxtBike_os_S3_N16R8_dev
+            profile: dev
+          - environment: nxtBike_os_S3_N16R8_prod
+            profile: prod
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -34,7 +42,10 @@ jobs:
         run: |
           test "$GITHUB_RUN_ATTEMPT" -lt 100
           export NXTB_BUILD_NUMBER=$((GITHUB_RUN_NUMBER * 100 + GITHUB_RUN_ATTEMPT))
-          pio run -e nxtBike_os_S3_N16R8
+          pio run -e ${{ matrix.environment }}
+
+      - name: Verify effective firmware profile
+        run: python scripts/check_profile.py ${{ matrix.profile }} .pio/build/${{ matrix.environment }}
 
       - name: Test version allocation
         run: python -m unittest discover -s tests -v
@@ -42,10 +53,10 @@ jobs:
       - name: Save firmware and debug symbols
         uses: actions/upload-artifact@v6
         with:
-          name: nxtbike-s3-${{ github.sha }}
+          name: ${{ matrix.environment }}-${{ github.sha }}
           path: |
-            .pio/build/nxtBike_os_S3_N16R8/*.bin
-            .pio/build/nxtBike_os_S3_N16R8/firmware.elf
-            .pio/build/nxtBike_os_S3_N16R8/firmware-version.json
+            .pio/build/${{ matrix.environment }}/*.bin
+            .pio/build/${{ matrix.environment }}/firmware.elf
+            .pio/build/${{ matrix.environment }}/firmware-version.json
           if-no-files-found: error
           retention-days: 14
