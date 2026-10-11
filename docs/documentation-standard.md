@@ -9,6 +9,7 @@ These repository conventions apply to authors and documentation agents.
 - Focus each page on the reader's task or question.
 - Keep one topic per page. Put independently useful topics in separate pages in the relevant folder; brevity does not mean merging unrelated topics.
 - Put essential information first and procedures in task order.
+- Start with technical content; omit content-free page introductions and approval, provenance, or process boilerplate.
 - Use plain language, active voice, short sentences, and one idea per paragraph.
 - Use descriptive headings and links. Add lists, tables, or examples when useful.
 - Keep content concise, accessible, and free of unnecessary emphasis.
@@ -19,6 +20,7 @@ These repository conventions apply to authors and documentation agents.
 
 - Document current behavior with evidence from source, configuration, or verified results.
 - Put technical specifications directly in the relevant topic document.
+- Keep each specification or table in one authoritative topic page; link to it from other pages instead of duplicating its details.
 - Do not create separate decision records or include rationale or alternatives unless explicitly requested.
 - Distinguish configured behavior, successful compilation, automated tests, and hardware validation.
 - Do not invent requirements, architecture, features, decisions, or measurements.
