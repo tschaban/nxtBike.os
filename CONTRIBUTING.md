@@ -1,42 +1,29 @@
 # Contributing
 
-Use PlatformIO with the pinned `nxtBike_os_S3_N16R8_dev` and `nxtBike_os_S3_N16R8_prod` environments
-composed in `config/platformio/environments.ini`. Keep commits
-focused and document changes to wiring, dependencies, and persisted data.
+Use PlatformIO with environments defined in
+[environments.ini](config/platformio/environments.ini). Keep changes focused.
 
 ## Workflow
 
 1. Create a branch for the change.
 2. Follow `.editorconfig`; use four-space indentation in C.
-3. Build both profiles with `pio run -e nxtBike_os_S3_N16R8_dev -e nxtBike_os_S3_N16R8_prod`.
-4. For hardware changes, flash the target and record the board revision,
-   wiring, expected behavior, and observed serial output.
-5. Include verification results and remaining limitations in the pull request.
+3. Run relevant [automated tests](tests/).
+4. Build affected profiles defined in [environments.ini](config/platformio/environments.ini).
+5. For hardware changes, record board revision, wiring, expected behavior, and
+   observed results. A successful build alone does not verify a peripheral.
+6. Update affected documents using the [documentation standard](docs/documentation-standard.md).
+7. Include verification results and remaining limitations in the pull request.
 
-Add unit tests for calculation and protocol logic when introduced. Validate
-timing, power, and electrical behavior on hardware. A successful build alone
-does not verify a peripheral.
+## Documentation and design
 
-## GitHub Actions
+Document current behavior and keep requested placeholders empty of body content.
+Do not turn suggestions into accepted requirements or add speculative designs,
+ownership notes, or work-tracking commentary. Record approved decisions under
+[architecture decisions](docs/architecture/decisions/README.md).
 
-`.github/workflows/firmware.yml` builds the development and production environments on pushes
-and pull requests, and supports manual runs. It saves firmware binaries and
-debug symbols as a downloadable artifact for 14 days. Reproduce the build
-locally with `pio run -e nxtBike_os_S3_N16R8_dev -e nxtBike_os_S3_N16R8_prod`.
+## Configuration and CI
 
-CI verifies the effective logging/console settings for both profiles and runs
-Python unit tests for version allocation. Firmware application
-logic has no unit-test suite yet. Once testable application logic exists,
-add a PlatformIO `native` environment and a separate
-CI job running `pio test -e native`. Do not make an empty test suite report
-success. Tests requiring real ESP32 peripherals need a connected board and a
-dedicated hardware runner or local execution.
-
-The workflow becomes active once committed and pushed to GitHub. Repository
-branch protection can then require both `Build firmware (...)` matrix checks before
-merging; that repository setting is not configured by this file.
-
-Keep credentials, generated output, and machine-specific configuration out of
-Git. Put shared configuration changes in `sdkconfig.defaults` and hardware/profile settings
-in `config/sdkconfig/`; review generated
-defaults before committing. Preserve the existing MIT license.
+The [firmware workflow](.github/workflows/firmware.yml) defines automated build checks.
+Keep credentials, generated output, and machine-specific configuration out of Git.
+Put shared ESP-IDF defaults in `sdkconfig.defaults` and hardware/profile defaults
+in `config/sdkconfig/`. Preserve the existing MIT license.

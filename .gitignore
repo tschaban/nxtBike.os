@@ -23,3 +23,9 @@ __pycache__/
 !.env.example
 *.pem
 *.key
+
+# Private AI configuration installed from a separate repository
+/.codex/
+/.agents/
+/.ai-context/
+/.ai-work/

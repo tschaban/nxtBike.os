@@ -47,8 +47,11 @@ jobs:
       - name: Verify effective firmware profile
         run: python scripts/check_profile.py ${{ matrix.profile }} .pio/build/${{ matrix.environment }}
 
-      - name: Test version allocation
+      - name: Test project tooling
         run: python -m unittest discover -s tests -v
+
+      - name: Check documentation structure and links
+        run: python scripts/check_docs.py
 
       - name: Save firmware and debug symbols
         uses: actions/upload-artifact@v6
