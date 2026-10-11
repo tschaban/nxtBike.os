@@ -5,4 +5,4 @@
 *.yml text eol=lf
 *.csv text eol=lf
 CMakeLists.txt text eol=lf
-sdkconfig.defaults text eol=lf
+config/sdkconfig/*.defaults text eol=lf

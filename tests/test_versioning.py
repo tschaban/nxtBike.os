@@ -17,7 +17,9 @@ class VersionTests(unittest.TestCase):
         self.configure(1, 0)
 
     def configure(self, major, minor):
-        (self.root / "version.json").write_text(json.dumps(dict(major=major, minor=minor)))
+        config = self.root / "config"
+        config.mkdir(exist_ok=True)
+        (config / "version.json").write_text(json.dumps(dict(major=major, minor=minor)))
 
     def test_increment_and_manual_change(self):
         self.assertEqual(allocate(self.root)["version"], "1.0.0001")

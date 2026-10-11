@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Automatic firmware build numbering with manual major/minor in `version.json`,
+- Automatic firmware build numbering with manual major/minor in `config/version.json`,
   embedded ESP-IDF version, JSON build metadata, and allocator tests.
 - PlatformIO development environment with an ESP-IDF framework and N16R8 overrides.
 - Initial ESP-IDF/FreeRTOS project structure for nxtBike.os.

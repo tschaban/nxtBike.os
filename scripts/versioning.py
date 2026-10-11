@@ -5,11 +5,11 @@ from pathlib import Path
 
 def allocate(root, build_override=None):
     root = Path(root)
-    config = json.loads((root / "version.json").read_text(encoding="utf-8"))
+    config = json.loads((root / "config" / "version.json").read_text(encoding="utf-8"))
     for field in ("major", "minor"):
         value = config.get(field)
         if type(value) is not int or not 0 <= value <= 999:
-            raise ValueError(f"version.json: {field} must be an integer from 0 to 999")
+            raise ValueError(f"config/version.json: {field} must be an integer from 0 to 999")
 
     state_dir = root / ".version"
     state_dir.mkdir(exist_ok=True)

@@ -25,5 +25,5 @@ ownership notes, or work-tracking commentary. Record approved decisions under
 
 The [firmware workflow](.github/workflows/firmware.yml) defines automated build checks.
 Keep credentials, generated output, and machine-specific configuration out of Git.
-Put shared ESP-IDF defaults in `sdkconfig.defaults` and hardware/profile defaults
+Put shared ESP-IDF defaults in `config/sdkconfig/common.defaults` and hardware/profile defaults
 in `config/sdkconfig/`. Preserve the existing MIT license.
