@@ -1,9 +1,11 @@
 import json
+import os
 from pathlib import Path
 import sys
 import runpy
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from versioning import allocate
@@ -52,12 +54,50 @@ class VersionTests(unittest.TestCase):
             def IsIntegrationDump(self):
                 return False
         hook = Path(__file__).resolve().parents[1] / "scripts/build_version.py"
-        for target in ("clean", "idedata", "menuconfig", "nobuild"):
+        for target in ("clean", "idedata", "nobuild"):
             # No subst() method: any attempt to allocate would fail this test.
             runpy.run_path(str(hook), init_globals={
                 "Import": lambda name: None, "env": EditorEnv(),
                 "COMMAND_LINE_TARGETS": [target],
             })
+
+    def test_build_hook_keeps_version_outputs_consistent(self):
+        scripts = Path(__file__).resolve().parents[1] / "scripts"
+        (self.root / "scripts").mkdir()
+        (self.root / "scripts/versioning.py").write_bytes(
+            (scripts / "versioning.py").read_bytes())
+        build_dir = self.root / "build"
+        root = self.root
+
+        class BuildEnv(dict):
+            def IsIntegrationDump(self):
+                return False
+
+            def subst(self, value):
+                return str({"$PROJECT_DIR": root, "$BUILD_DIR": build_dir}[value])
+
+            def StringifyMacro(self, value):
+                return json.dumps(value)
+
+            def Append(self, **values):
+                for key, value in values.items():
+                    self.setdefault(key, []).extend(value)
+
+        for build in (1, 2):
+            env = BuildEnv()
+            with patch.dict(os.environ, {}, clear=True):
+                runpy.run_path(str(scripts / "build_version.py"), init_globals={
+                    "Import": lambda name: None, "env": env,
+                    "COMMAND_LINE_TARGETS": [],
+                })
+            expected = f"1.0.{build:04d}"
+            self.assertFalse((root / "version.txt").exists())
+            manifest = json.loads((build_dir / "firmware-version.json").read_text())
+            self.assertEqual(manifest["version"], expected)
+            self.assertEqual(manifest["build"], build)
+            self.assertEqual(dict(env["CPPDEFINES"])["NXTB_FIRMWARE_VERSION"],
+                             json.dumps(expected))
+            self.assertIn("-Wl,--undefined=nxtbike_firmware_version", env["LINKFLAGS"])
 
 
 if __name__ == "__main__":

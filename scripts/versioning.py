@@ -30,8 +30,6 @@ def allocate(root, build_override=None):
             if build < 1:
                 raise ValueError("NXTB_BUILD_NUMBER must be positive")
         version = f"{config['major']}.{config['minor']}.{build:04d}"
-        if len(version) > 31:
-            raise ValueError("Version exceeds ESP-IDF's 31-character limit")
         if build_override is None:
             temporary = state.with_suffix(".tmp")
             temporary.write_text(str(build) + "\n", encoding="utf-8")

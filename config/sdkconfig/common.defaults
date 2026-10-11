@@ -1,2 +1,0 @@
-# Shared ESP-IDF defaults for all hardware and profiles.
-# Hardware and profile defaults are selected by config/platformio/environments.ini.

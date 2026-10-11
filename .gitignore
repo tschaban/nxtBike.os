@@ -1,12 +1,6 @@
-# ESP-IDF generated output and local configuration
-/build/
+# PlatformIO build output and local version state
 /.pio/
-/sdkconfig
-/sdkconfig.old
-/sdkconfig.*
-/managed_components/
 /.version/
-/version.txt
 
 # Editor and OS files
 /.vscode/

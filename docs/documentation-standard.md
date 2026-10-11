@@ -7,14 +7,19 @@ These repository conventions apply to authors and documentation agents.
 ## Writing
 
 - Focus each page on the reader's task or question.
+- Keep one topic per page. Put independently useful topics in separate pages in the relevant folder; brevity does not mean merging unrelated topics.
 - Put essential information first and procedures in task order.
 - Use plain language, active voice, short sentences, and one idea per paragraph.
 - Use descriptive headings and links. Add lists, tables, or examples when useful.
 - Keep content concise, accessible, and free of unnecessary emphasis.
+- Success means short, concrete documentation containing only essential information.
+- Remove repetition, background, and implementation details that do not help the reader act or understand the current behavior.
 
 ## Content
 
 - Document current behavior with evidence from source, configuration, or verified results.
+- Put technical specifications directly in the relevant topic document.
+- Do not create separate decision records or include rationale or alternatives unless explicitly requested.
 - Distinguish configured behavior, successful compilation, automated tests, and hardware validation.
 - Do not invent requirements, architecture, features, decisions, or measurements.
 - Keep placeholder pages title-only until content is explicitly requested.
